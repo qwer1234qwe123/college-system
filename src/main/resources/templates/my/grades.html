@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('내 성적')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: header}"></header>
+<main class="container narrow">
+	<div class="page-head">
+		<div>
+			<h1>내 성적</h1>
+			<p class="muted">평점은 4.5 만점, 성적이 입력된 과목만 학점 가중 평균으로 계산합니다.</p>
+		</div>
+	</div>
+
+	<section class="stats three">
+		<div class="stat">
+			<span class="stat-label">전체 평점</span>
+			<strong class="stat-value">
+				<span th:text="${report.gpa} == null ? '-' : ${#numbers.formatDecimal(report.gpa, 1, 2)}">-</span><small> / 4.5</small>
+			</strong>
+		</div>
+		<div class="stat">
+			<span class="stat-label">취득 학점</span>
+			<strong class="stat-value" th:text="${report.earnedCredits}">0</strong>
+		</div>
+		<div class="stat">
+			<span class="stat-label">신청 학점</span>
+			<strong class="stat-value" th:text="${report.totalCredits}">0</strong>
+		</div>
+	</section>
+
+	<section th:each="t : ${report.terms}" class="card term-card">
+		<div class="term-head">
+			<h2 th:text="${t.termLabel}">2026년 2학기</h2>
+			<span class="muted">
+				<span th:text="${t.credits}"></span>학점 ·
+				평점 <strong th:text="${t.gpa} == null ? '-' : ${#numbers.formatDecimal(t.gpa, 1, 2)}">-</strong>
+			</span>
+		</div>
+		<div class="table-wrap">
+			<table class="table">
+				<thead><tr><th>과목</th><th>구분</th><th>학점</th><th class="hide-sm">담당교수</th><th>점수</th><th>등급</th></tr></thead>
+				<tbody>
+				<tr th:each="r : ${t.rows}">
+					<td>
+						<strong th:text="${r.name}"></strong>
+						<div class="sub mono" th:text="${r.code}"></div>
+					</td>
+					<td th:text="${r.majorLabel}"></td>
+					<td th:text="${r.credit}"></td>
+					<td class="hide-sm" th:text="${r.profName}"></td>
+					<td class="mono" th:text="${r.score} ?: '-'"></td>
+					<td><span class="grade-letter" th:text="${r.letter}" th:attr="data-grade=${#strings.substring(r.letter, 0, 1)}"></span></td>
+				</tr>
+				</tbody>
+			</table>
+		</div>
+	</section>
+
+	<div class="card empty-card" th:if="${#lists.isEmpty(report.terms)}">
+		수강 신청한 과목이 없습니다. <a th:href="@{/enroll}">수강신청</a>으로 이동하세요.
+	</div>
+</main>
+</body>
+</html>

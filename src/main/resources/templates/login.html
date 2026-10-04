@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('로그인')}"></head>
+<body class="login-page">
+<main class="login-wrap">
+	<div class="login-card">
+		<div class="login-head">
+			<span class="brand-mark lg">학</span>
+			<h1>학사정보시스템</h1>
+			<p>학번 또는 교수코드로 로그인하세요.</p>
+		</div>
+		<div class="alert alert-err" th:if="${param.error}">학번(교수코드) 또는 비밀번호가 올바르지 않습니다.</div>
+		<div class="alert alert-ok" th:if="${param.logout}">로그아웃되었습니다.</div>
+		<form th:action="@{/login}" method="post" class="stack">
+			<label class="field">
+				<span>학번 / 교수코드</span>
+				<input type="text" name="username" required autofocus autocomplete="username">
+			</label>
+			<label class="field">
+				<span>비밀번호</span>
+				<input type="password" name="password" required autocomplete="current-password">
+			</label>
+			<button type="submit" class="btn btn-primary btn-block">로그인</button>
+		</form>
+	</div>
+	<p class="login-foot">College System · codedbyjun.dev</p>
+</main>
+</body>
+</html>

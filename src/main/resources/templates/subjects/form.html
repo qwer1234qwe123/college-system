@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head(${edit} ? '과목 수정' : '과목 개설')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: header}"></header>
+<main class="container narrow">
+	<a class="back" th:href="@{/subjects(mine=true)}">← 과목 관리</a>
+	<div class="page-head">
+		<div>
+			<h1 th:text="${edit} ? '과목 수정' : '과목 개설'"></h1>
+			<p class="muted">담당교수는 로그인한 교수로 지정됩니다.</p>
+		</div>
+	</div>
+	<div th:replace="~{fragments/layout :: alerts}"></div>
+
+	<form th:object="${form}" method="post" class="card form"
+		  th:action="${edit} ? @{/subjects/{c}/edit(c=*{code})} : @{/subjects/new}">
+
+		<h2 class="section-title">과목 정보</h2>
+		<div class="form-grid">
+			<label class="field" th:classappend="${#fields.hasErrors('code')} ? 'has-error'">
+				<span>과목 코드</span>
+				<input type="text" th:field="*{code}" th:readonly="${edit}" maxlength="20" placeholder="예: CS101">
+				<small class="error" th:errors="*{code}"></small>
+			</label>
+			<label class="field" th:classappend="${#fields.hasErrors('name')} ? 'has-error'">
+				<span>과목명</span>
+				<input type="text" th:field="*{name}" maxlength="20" placeholder="예: 자료구조">
+				<small class="error" th:errors="*{name}"></small>
+			</label>
+			<label class="field" th:classappend="${#fields.hasErrors('deptCode')} ? 'has-error'">
+				<span>개설 학과</span>
+				<select th:field="*{deptCode}">
+					<option value="">선택하세요</option>
+					<option th:each="d : ${departments}" th:value="${d.code}" th:text="${d.name}"></option>
+				</select>
+				<small class="error" th:errors="*{deptCode}"></small>
+			</label>
+			<label class="field" th:classappend="${#fields.hasErrors('majorType')} ? 'has-error'">
+				<span>이수구분</span>
+				<select th:field="*{majorType}">
+					<option value="A">전공필수</option>
+					<option value="B">전공선택</option>
+					<option value="C">교양필수</option>
+					<option value="D">교양선택</option>
+				</select>
+				<small class="error" th:errors="*{majorType}"></small>
+			</label>
+			<label class="field" th:classappend="${#fields.hasErrors('credit')} ? 'has-error'">
+				<span>학점</span>
+				<select th:field="*{credit}">
+					<option th:each="c : ${#numbers.sequence(1, 4)}" th:value="${c}" th:text="${c} + '학점'"></option>
+				</select>
+				<small class="error" th:errors="*{credit}"></small>
+			</label>
+			<label class="field" th:classappend="${#fields.hasErrors('term')} ? 'has-error'">
+				<span>개설 학기</span>
+				<input type="text" th:field="*{term}" maxlength="6" placeholder="2026-2">
+				<small class="error" th:errors="*{term}"></small>
+			</label>
+			<label class="field" th:classappend="${#fields.hasErrors('room')} ? 'has-error'">
+				<span>강의실</span>
+				<input type="text" th:field="*{room}" maxlength="10" placeholder="예: 공학관 301">
+				<small class="error" th:errors="*{room}"></small>
+			</label>
+			<label class="field" th:classappend="${#fields.hasErrors('capacity')} ? 'has-error'">
+				<span>수강 정원</span>
+				<input type="number" th:field="*{capacity}" min="1" max="500">
+				<small class="error" th:errors="*{capacity}"></small>
+			</label>
+		</div>
+
+		<h2 class="section-title">강의시간</h2>
+		<p class="hint-text">최대 3개까지 입력할 수 있습니다. 1교시 09:00 ~ 9교시 17:00 (교시당 1시간)</p>
+		<div class="slot-list">
+			<div class="slot" th:each="slot, st : *{slots}">
+				<span class="slot-no" th:text="${st.count}"></span>
+				<select th:field="*{slots[__${st.index}__].day}">
+					<option value="">요일 선택</option>
+					<option value="1">월</option>
+					<option value="2">화</option>
+					<option value="3">수</option>
+					<option value="4">목</option>
+					<option value="5">금</option>
+				</select>
+				<select th:field="*{slots[__${st.index}__].start}">
+					<option value="">시작</option>
+					<option th:each="p : ${#numbers.sequence(1, 9)}" th:value="${p}" th:text="${p} + '교시'"></option>
+				</select>
+				<span class="slot-sep">~</span>
+				<select th:field="*{slots[__${st.index}__].end}">
+					<option value="">끝</option>
+					<option th:each="p : ${#numbers.sequence(1, 9)}" th:value="${p}" th:text="${p} + '교시'"></option>
+				</select>
+			</div>
+		</div>
+
+		<div class="actions">
+			<a class="btn btn-ghost" th:href="@{/subjects(mine=true)}">취소</a>
+			<button type="submit" class="btn btn-primary" th:text="${edit} ? '저장' : '개설'"></button>
+		</div>
+	</form>
+</main>
+</body>
+</html>

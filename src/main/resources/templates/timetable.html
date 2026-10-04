@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('시간표')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: header}"></header>
+<main class="container">
+	<div class="page-head">
+		<div>
+			<h1 th:text="${prof} ? '강의 시간표' : '내 시간표'">시간표</h1>
+			<p class="muted">
+				<span th:text="${termLabel}"></span> ·
+				<strong th:text="${tt.subjectCount}">0</strong>과목 · <strong th:text="${tt.credits}">0</strong>학점
+			</p>
+		</div>
+		<form th:action="@{/timetable}" method="get">
+			<select name="term" onchange="this.form.submit()">
+				<option th:each="t : ${terms}" th:value="${t.value}" th:text="${t.label}" th:selected="${t.value == term}"></option>
+			</select>
+		</form>
+	</div>
+
+	<div class="card tt-card">
+		<div class="tt-scroll">
+			<div class="tt-grid">
+				<div class="tt-head" style="grid-column:1;grid-row:1"></div>
+				<div class="tt-head" th:each="d, st : ${days}" th:text="${d}"
+					 th:style="|grid-column:${st.count + 1};grid-row:1|"></div>
+
+				<th:block th:each="pt, ps : ${periodTimes}">
+					<div class="tt-period" th:style="|grid-column:1;grid-row:${ps.count + 1}|">
+						<strong th:text="${ps.count}"></strong>
+						<small th:text="${pt}"></small>
+					</div>
+					<div class="tt-cell" th:each="d, ds : ${days}"
+						 th:style="|grid-column:${ds.count + 1};grid-row:${ps.count + 1}|"></div>
+				</th:block>
+
+				<div class="tt-block" th:each="b : ${tt.blocks}"
+					 th:classappend="'c' + ${b.color}"
+					 th:style="|grid-column:${b.day + 1};grid-row:${b.start + 1} / ${b.end + 2}|">
+					<strong th:text="${b.name}"></strong>
+					<span th:text="${b.room}"></span>
+					<span th:unless="${prof}" th:text="${b.profName}"></span>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="card empty-card" th:if="${tt.subjectCount == 0}">
+		<span th:unless="${prof}">이 학기에 신청한 과목이 없습니다. <a th:href="@{/enroll(term=${term})}">수강신청</a>으로 이동하세요.</span>
+		<span th:if="${prof}">이 학기에 담당하는 과목이 없습니다. <a th:href="@{/subjects/new}">과목 개설</a>로 이동하세요.</span>
+	</div>
+</main>
+</body>
+</html>

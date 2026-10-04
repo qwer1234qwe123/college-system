@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/layout :: head('과목 관리')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: header}"></header>
+<main class="container">
+	<div class="page-head">
+		<div>
+			<h1>과목 관리</h1>
+			<p class="muted"><span th:text="${termLabel}"></span> · 총 <strong th:text="${#lists.size(subjects)}">0</strong>개 과목</p>
+		</div>
+		<a class="btn btn-primary" th:href="@{/subjects/new}">+ 과목 개설</a>
+	</div>
+	<div th:replace="~{fragments/layout :: alerts}"></div>
+
+	<div class="card">
+		<form th:action="@{/subjects}" method="get" class="toolbar">
+			<select name="term" class="w-sm" onchange="this.form.submit()">
+				<option th:each="t : ${terms}" th:value="${t.value}" th:text="${t.label}"
+						th:selected="${t.value == term}"></option>
+			</select>
+			<div class="segmented">
+				<a th:href="@{/subjects(term=${term})}" th:classappend="${!mine} ? 'on'">전체 과목</a>
+				<a th:href="@{/subjects(term=${term},mine=true)}" th:classappend="${mine} ? 'on'">내 과목</a>
+			</div>
+		</form>
+
+		<div class="table-wrap">
+			<table class="table">
+				<thead>
+				<tr>
+					<th>과목</th><th>구분</th><th>학점</th><th>담당교수</th><th>강의시간</th><th class="hide-sm">강의실</th><th>신청 / 정원</th><th></th>
+				</tr>
+				</thead>
+				<tbody>
+				<tr th:each="s : ${subjects}">
+					<td>
+						<strong th:text="${s.name}"></strong>
+						<div class="sub mono" th:text="${s.code} + ' · ' + ${s.deptName}"></div>
+					</td>
+					<td><span class="badge" th:classappend="'badge-major-' + ${s.majorType}" th:text="${s.majorLabel}"></span></td>
+					<td th:text="${s.credit}"></td>
+					<td th:text="${s.profName}"></td>
+					<td class="nowrap" th:text="${s.timeText}"></td>
+					<td class="hide-sm" th:text="${s.room}"></td>
+					<td>
+						<div class="meter-wrap">
+							<span class="mono" th:text="${s.enrolled} + ' / ' + ${s.capacity}"></span>
+							<span class="meter"><span th:style="'width:' + ${s.fillPercent()} + '%'"
+													  th:classappend="${s.full()} ? 'is-full'"></span></span>
+						</div>
+					</td>
+					<td class="row-actions">
+						<th:block th:if="${s.profCode == #authentication.name}">
+							<a class="btn btn-ghost btn-sm" th:href="@{/subjects/{c}/edit(c=${s.code})}">수정</a>
+							<form th:action="@{/subjects/{c}/delete(c=${s.code})}" method="post"
+								  onsubmit="return confirm('과목을 삭제할까요?');">
+								<button type="submit" class="btn btn-danger-ghost btn-sm">삭제</button>
+							</form>
+						</th:block>
+					</td>
+				</tr>
+				<tr th:if="${#lists.isEmpty(subjects)}">
+					<td colspan="8" class="empty">이 학기에 개설된 과목이 없습니다.</td>
+				</tr>
+				</tbody>
+			</table>
+		</div>
+	</div>
+</main>
+</body>
+</html>

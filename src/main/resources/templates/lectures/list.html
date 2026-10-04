@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('성적 입력')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: header}"></header>
+<main class="container">
+	<div class="page-head">
+		<div>
+			<h1>성적 입력</h1>
+			<p class="muted"><span th:text="${termLabel}"></span> · 내 강의 <strong th:text="${#lists.size(lectures)}">0</strong>개</p>
+		</div>
+		<form th:action="@{/lectures}" method="get">
+			<select name="term" onchange="this.form.submit()">
+				<option th:each="t : ${terms}" th:value="${t.value}" th:text="${t.label}" th:selected="${t.value == term}"></option>
+			</select>
+		</form>
+	</div>
+	<div th:replace="~{fragments/layout :: alerts}"></div>
+
+	<section class="lecture-grid">
+		<a class="card lecture" th:each="l : ${lectures}" th:with="s=${l.subject}"
+		   th:href="@{/lectures/{c}/grades(c=${s.code})}">
+			<div class="lecture-top">
+				<span class="badge" th:classappend="'badge-major-' + ${s.majorType}" th:text="${s.majorLabel}"></span>
+				<span class="badge" th:classappend="${l.done()} ? 'badge-green' : 'badge-gray'"
+					  th:text="${l.done()} ? '입력 완료' : (${s.enrolled == 0} ? '수강생 없음' : '입력 중')"></span>
+			</div>
+			<strong class="lecture-name" th:text="${s.name}"></strong>
+			<span class="sub mono" th:text="${s.code} + ' · ' + ${s.credit} + '학점 · ' + ${s.timeText}"></span>
+			<div class="lecture-progress">
+				<span>성적 입력 <strong th:text="${l.graded}">0</strong> / <span th:text="${s.enrolled}">0</span>명</span>
+				<span class="meter"><span th:style="'width:' + (${s.enrolled} == 0 ? 0 : ${l.graded * 100 / s.enrolled}) + '%'"></span></span>
+			</div>
+		</a>
+	</section>
+	<div class="card empty-card" th:if="${#lists.isEmpty(lectures)}">
+		이 학기에 담당하는 과목이 없습니다. <a th:href="@{/subjects/new}">과목 개설</a>에서 먼저 과목을 만드세요.
+	</div>
+</main>
+</body>
+</html>

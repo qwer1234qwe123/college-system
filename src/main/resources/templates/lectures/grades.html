@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('성적 입력')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: header}"></header>
+<main class="container" th:with="s=${roster.subject}">
+	<a class="back" th:href="@{/lectures(term=${s.term})}">← 내 강의</a>
+	<div class="page-head">
+		<div>
+			<h1 th:text="${s.name}">과목명</h1>
+			<p class="muted" th:text="${s.code} + ' · ' + ${s.termLabel} + ' · ' + ${s.timeText} + ' · 수강생 ' + ${s.enrolled} + '명'"></p>
+		</div>
+	</div>
+	<div th:replace="~{fragments/layout :: alerts}"></div>
+
+	<form th:action="@{/lectures/{c}/grades(c=${s.code})}" method="post" class="card">
+		<div class="toolbar between">
+			<p class="hint-text">점수(0~100)를 입력하면 등급이 자동으로 표시됩니다. 빈 칸은 미입력으로 저장됩니다.</p>
+			<span class="muted">평균 <strong id="avg">-</strong>점</span>
+		</div>
+		<div class="table-wrap">
+			<table class="table">
+				<thead>
+				<tr><th>학번</th><th>이름</th><th class="hide-sm">학년</th><th class="hide-sm">학적</th><th>점수</th><th>등급</th></tr>
+				</thead>
+				<tbody>
+				<tr th:each="r : ${roster.rows}">
+					<td class="mono" th:text="${r.studentCode}"></td>
+					<td th:text="${r.studentName}"></td>
+					<td class="hide-sm" th:text="${r.grade} + '학년'"></td>
+					<td class="hide-sm"><span th:replace="~{fragments/layout :: status(${r.status})}"></span></td>
+					<td><input type="number" class="score-input" min="0" max="100" step="1"
+							   th:name="|scores[${r.attendSeq}]|" th:value="${r.score}"></td>
+					<td><span class="grade-letter" th:text="${r.letter}">-</span></td>
+				</tr>
+				<tr th:if="${#lists.isEmpty(roster.rows)}">
+					<td colspan="6" class="empty">수강 신청한 학생이 없습니다.</td>
+				</tr>
+				</tbody>
+			</table>
+		</div>
+		<div class="actions" th:unless="${#lists.isEmpty(roster.rows)}">
+			<button type="submit" class="btn btn-primary">성적 저장</button>
+		</div>
+	</form>
+</main>
+<script th:inline="none">
+	(function () {
+		var cuts = [[95, 'A+'], [90, 'A0'], [85, 'B+'], [80, 'B0'], [75, 'C+'], [70, 'C0'], [65, 'D+'], [60, 'D0']];
+		function letter(v) {
+			if (v === '' || isNaN(v)) return '-';
+			for (var i = 0; i < cuts.length; i++) if (v >= cuts[i][0]) return cuts[i][1];
+			return 'F';
+		}
+		function refresh() {
+			var sum = 0, n = 0;
+			document.querySelectorAll('.score-input').forEach(function (input) {
+				var v = input.value === '' ? '' : Number(input.value);
+				var cell = input.closest('tr').querySelector('.grade-letter');
+				cell.textContent = letter(v);
+				cell.dataset.grade = letter(v).charAt(0);
+				if (v !== '') { sum += v; n++; }
+			});
+			document.getElementById('avg').textContent = n ? (sum / n).toFixed(1) : '-';
+		}
+		document.querySelectorAll('.score-input').forEach(function (i) { i.addEventListener('input', refresh); });
+		refresh();
+	})();
+</script>
+</body>
+</html>

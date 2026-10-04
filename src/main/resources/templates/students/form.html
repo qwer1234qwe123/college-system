@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head(${edit} ? '학생 수정' : '학생 등록')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: header}"></header>
+<main class="container narrow">
+	<a class="back" th:href="${edit} ? @{/students/{code}(code=${form.code})} : @{/students}"
+	   th:text="${edit} ? '← 학생 정보' : '← 학생 목록'"></a>
+	<div class="page-head">
+		<div>
+			<h1 th:text="${edit} ? '학생 정보 수정' : '학생 등록'"></h1>
+			<p class="muted" th:text="${edit} ? '변경할 항목만 수정하세요.' : '모든 항목을 입력해야 등록됩니다.'"></p>
+		</div>
+	</div>
+	<div th:replace="~{fragments/layout :: alerts}"></div>
+
+	<form th:object="${form}" method="post" class="card form"
+		  th:action="${edit} ? @{/students/{code}/edit(code=*{code})} : @{/students/new}">
+
+		<h2 class="section-title">학적 정보</h2>
+		<div class="form-grid">
+			<label class="field" th:classappend="${#fields.hasErrors('code')} ? 'has-error'">
+				<span>학번</span>
+				<input type="text" th:field="*{code}" th:readonly="${edit}" maxlength="20" placeholder="예: 20260001">
+				<small class="error" th:errors="*{code}"></small>
+			</label>
+			<label class="field" th:classappend="${#fields.hasErrors('name')} ? 'has-error'">
+				<span>이름</span>
+				<input type="text" th:field="*{name}" maxlength="20">
+				<small class="error" th:errors="*{name}"></small>
+			</label>
+			<label class="field" th:classappend="${#fields.hasErrors('deptCode')} ? 'has-error'">
+				<span>학과</span>
+				<select th:field="*{deptCode}">
+					<option value="">선택하세요</option>
+					<option th:each="d : ${departments}" th:value="${d.code}" th:text="${d.name}"></option>
+				</select>
+				<small class="error" th:errors="*{deptCode}"></small>
+				<small class="hint" th:if="${#lists.isEmpty(departments)}">등록된 학과가 없습니다. <a th:href="@{/departments}">학과를 먼저 추가</a>하세요.</small>
+			</label>
+			<label class="field" th:classappend="${#fields.hasErrors('grade')} ? 'has-error'">
+				<span>학년</span>
+				<select th:field="*{grade}">
+					<option th:each="g : ${ {'1','2','3','4'} }" th:value="${g}" th:text="${g} + '학년'"></option>
+				</select>
+				<small class="error" th:errors="*{grade}"></small>
+			</label>
+			<label class="field" th:classappend="${#fields.hasErrors('status')} ? 'has-error'">
+				<span>학적상태</span>
+				<select th:field="*{status}">
+					<option th:each="st : ${ {'재학','휴학','졸업','제적','자퇴'} }" th:value="${st}" th:text="${st}"></option>
+				</select>
+				<small class="error" th:errors="*{status}"></small>
+			</label>
+			<label class="field" th:classappend="${#fields.hasErrors('entranceDate')} ? 'has-error'">
+				<span>입학일</span>
+				<input type="date" th:field="*{entranceDate}">
+				<small class="error" th:errors="*{entranceDate}"></small>
+			</label>
+		</div>
+
+		<h2 class="section-title">개인 정보</h2>
+		<div class="form-grid">
+			<label class="field" th:classappend="${#fields.hasErrors('gender')} ? 'has-error'">
+				<span>성별</span>
+				<select th:field="*{gender}">
+					<option value="">선택하세요</option>
+					<option value="M">남</option>
+					<option value="F">여</option>
+				</select>
+				<small class="error" th:errors="*{gender}"></small>
+			</label>
+			<label class="field" th:classappend="${#fields.hasErrors('birth')} ? 'has-error'">
+				<span>생년월일</span>
+				<input type="date" th:field="*{birth}">
+				<small class="error" th:errors="*{birth}"></small>
+			</label>
+			<label class="field" th:classappend="${#fields.hasErrors('phone')} ? 'has-error'">
+				<span>전화번호</span>
+				<input type="tel" th:field="*{phone}" maxlength="20" placeholder="010-0000-0000">
+				<small class="error" th:errors="*{phone}"></small>
+			</label>
+			<label class="field" th:classappend="${#fields.hasErrors('email')} ? 'has-error'">
+				<span>이메일</span>
+				<input type="email" th:field="*{email}" maxlength="40" placeholder="name@example.com">
+				<small class="error" th:errors="*{email}"></small>
+			</label>
+			<label class="field wide" th:classappend="${#fields.hasErrors('addr')} ? 'has-error'">
+				<span>주소</span>
+				<input type="text" th:field="*{addr}" maxlength="100">
+				<small class="error" th:errors="*{addr}"></small>
+			</label>
+		</div>
+
+		<h2 class="section-title">로그인</h2>
+		<div class="form-grid">
+			<label class="field" th:classappend="${#fields.hasErrors('password')} ? 'has-error'">
+				<span>비밀번호</span>
+				<input type="password" th:field="*{password}" maxlength="50" autocomplete="new-password"
+					   th:placeholder="${edit} ? '변경할 때만 입력' : ''">
+				<small class="error" th:errors="*{password}"></small>
+				<small class="hint" th:if="${edit}">비워두면 기존 비밀번호가 유지됩니다.</small>
+			</label>
+		</div>
+
+		<div class="actions">
+			<a class="btn btn-ghost" th:href="${edit} ? @{/students/{code}(code=*{code})} : @{/students}">취소</a>
+			<button type="submit" class="btn btn-primary" th:text="${edit} ? '저장' : '등록'"></button>
+		</div>
+	</form>
+</main>
+</body>
+</html>

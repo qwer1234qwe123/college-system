@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('수강신청')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: header}"></header>
+<main class="container">
+	<div class="page-head">
+		<div>
+			<h1>수강신청</h1>
+			<p class="muted" th:text="${termLabel}"></p>
+		</div>
+		<form th:action="@{/enroll}" method="get">
+			<select name="term" onchange="this.form.submit()">
+				<option th:each="t : ${terms}" th:value="${t.value}" th:text="${t.label}" th:selected="${t.value == term}"></option>
+			</select>
+		</form>
+	</div>
+	<div th:replace="~{fragments/layout :: alerts}"></div>
+
+	<section class="card enroll-summary">
+		<div class="credit-box">
+			<span class="stat-label">신청 학점</span>
+			<strong class="stat-value"><span th:text="${myCredits}">0</span><small> / <span th:text="${maxCredits}">21</span></small></strong>
+			<span class="meter lg"><span th:style="'width:' + ${myCredits * 100 / maxCredits} + '%'"></span></span>
+		</div>
+		<div class="my-list">
+			<span class="stat-label">신청한 과목 <strong th:text="${#lists.size(myRows)}">0</strong>개</span>
+			<div class="chips">
+				<span class="chip" th:each="r : ${myRows}">
+					<strong th:text="${r.subject.name}"></strong>
+					<small th:text="${r.subject.timeText}"></small>
+				</span>
+				<span class="muted" th:if="${#lists.isEmpty(myRows)}">아직 신청한 과목이 없습니다.</span>
+			</div>
+			<a class="link-sm" th:href="@{/timetable(term=${term})}" th:unless="${#lists.isEmpty(myRows)}">시간표로 보기 →</a>
+		</div>
+	</section>
+
+	<h2 class="section-title">개설 과목</h2>
+	<div class="card">
+		<div class="table-wrap">
+			<table class="table">
+				<thead>
+				<tr><th>과목</th><th>구분</th><th>학점</th><th>담당교수</th><th>강의시간</th><th class="hide-sm">강의실</th><th>신청 / 정원</th><th></th></tr>
+				</thead>
+				<tbody>
+				<tr th:each="r : ${rows}" th:with="s=${r.subject}" th:classappend="${r.applied} ? 'row-applied'">
+					<td>
+						<strong th:text="${s.name}"></strong>
+						<div class="sub mono" th:text="${s.code} + ' · ' + ${s.deptName}"></div>
+					</td>
+					<td><span class="badge" th:classappend="'badge-major-' + ${s.majorType}" th:text="${s.majorLabel}"></span></td>
+					<td th:text="${s.credit}"></td>
+					<td th:text="${s.profName}"></td>
+					<td class="nowrap" th:text="${s.timeText}"></td>
+					<td class="hide-sm" th:text="${s.room}"></td>
+					<td>
+						<div class="meter-wrap">
+							<span class="mono" th:text="${s.enrolled} + ' / ' + ${s.capacity}"></span>
+							<span class="meter"><span th:style="'width:' + ${s.fillPercent()} + '%'"
+													  th:classappend="${s.full()} ? 'is-full'"></span></span>
+						</div>
+					</td>
+					<td class="row-actions">
+						<form th:if="${r.applied}" th:action="@{/enroll/{c}/cancel(c=${s.code})}" method="post"
+							  onsubmit="return confirm('수강신청을 취소할까요?');">
+							<input type="hidden" name="term" th:value="${term}">
+							<button type="submit" class="btn btn-danger-ghost btn-sm">취소</button>
+						</form>
+						<form th:unless="${r.applied}" th:action="@{/enroll/{c}(c=${s.code})}" method="post">
+							<input type="hidden" name="term" th:value="${term}">
+							<button type="submit" class="btn btn-primary btn-sm" th:disabled="${s.full()}"
+									th:text="${s.full()} ? '마감' : '신청'">신청</button>
+						</form>
+					</td>
+				</tr>
+				<tr th:if="${#lists.isEmpty(rows)}">
+					<td colspan="8" class="empty">이 학기에 개설된 과목이 없습니다.</td>
+				</tr>
+				</tbody>
+			</table>
+		</div>
+	</div>
+</main>
+</body>
+</html>

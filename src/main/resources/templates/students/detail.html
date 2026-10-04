@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/layout :: head('학생 정보')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: header}"></header>
+<main class="container narrow" th:with="s=${detail.student}">
+	<a class="back" sec:authorize="hasRole('PROF')" th:href="@{/students}">← 학생 목록</a>
+	<div th:replace="~{fragments/layout :: alerts}"></div>
+
+	<div class="card profile">
+		<div class="profile-head">
+			<span class="avatar lg" th:text="${#strings.substring(s.name, 0, 1)}"></span>
+			<div class="profile-title">
+				<h1 th:text="${s.name}">이름</h1>
+				<p class="muted">
+					<span class="mono" th:text="${s.code}"></span> ·
+					<span th:text="${detail.deptName}"></span> ·
+					<span th:text="${s.grade} + '학년'"></span>
+				</p>
+			</div>
+			<span th:replace="~{fragments/layout :: status(${s.status})}"></span>
+		</div>
+
+		<h2 class="section-title">기본 정보</h2>
+		<dl class="info-grid">
+			<div><dt>성별</dt><dd th:text="${s.gender == 'M'} ? '남' : '여'"></dd></div>
+			<div><dt>생년월일</dt><dd th:text="${#temporals.format(s.birth, 'yyyy. M. d.')}"></dd></div>
+			<div><dt>입학일</dt><dd th:text="${#temporals.format(s.entranceDate, 'yyyy. M. d.')}"></dd></div>
+			<div><dt>학과</dt><dd th:text="${detail.deptName}"></dd></div>
+		</dl>
+
+		<h2 class="section-title">연락처</h2>
+		<dl class="info-grid">
+			<div><dt>전화번호</dt><dd th:text="${s.phone}"></dd></div>
+			<div><dt>이메일</dt><dd th:text="${s.email}"></dd></div>
+			<div class="wide"><dt>주소</dt><dd th:text="${s.addr}"></dd></div>
+		</dl>
+
+		<div class="actions" sec:authorize="hasRole('PROF')">
+			<form th:action="@{/students/{code}/delete(code=${s.code})}" method="post"
+				  onsubmit="return confirm('정말 삭제할까요? 되돌릴 수 없습니다.');">
+				<button type="submit" class="btn btn-danger-ghost">삭제</button>
+			</form>
+			<a class="btn btn-primary" th:href="@{/students/{code}/edit(code=${s.code})}">정보 수정</a>
+		</div>
+	</div>
+</main>
+</body>
+</html>
